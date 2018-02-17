@@ -3,10 +3,10 @@ from PIL import Image
 
 
 def convert_btw_rgb_ycbcr(image, dir):
-    if dir:
+    if dir:  # rgb 2 ycbcr
         image_ycbcr = image.convert('YCbCr')
         return image_ycbcr
-    else:
+    else:  # ycbcr to rgb
         image_rgb = image.convert('RGB')
         return image_rgb
 
@@ -20,13 +20,11 @@ def crop_input(input, label):
 
 
 def image_label_gen(image_path, label_path):
-    imagefile = Image.open(image_path)
-    labelfile = Image.open(label_path)
-    imagefile = crop_input(imagefile, labelfile)
-    imagefile = convert_btw_rgb_ycbcr(imagefile, dir=True)
-    labelfile = convert_btw_rgb_ycbcr(labelfile, dir=True)
+    image = np.array(convert_btw_rgb_ycbcr(Image.open(image_path), dir=True))
+    label = np.array(convert_btw_rgb_ycbcr(Image.open(label_path), dir=True))
+    image = crop_input(input=image, label=label)
 
-    return imagefile, labelfile
+    return image, label
 
 
 if __name__ == '__main__':
