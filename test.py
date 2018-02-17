@@ -3,11 +3,10 @@ import numpy as np
 from model import SRCNN
 from .utils import preprocess
 
-
-class TRAIN:
+class TEST:
     def __init__(self, sess, channel_length, save_path):
-        #self.image_size = image_size
-        #self.label_size = label_size
+        # self.image_size = image_size
+        # self.label_size = label_size
         self.c_length = channel_length
         self.x = tf.placeholder([None, self.image_size, self.image_size, self.c_length], dtype='float32', name='image')
         self.y = tf.placeholder([None, self.label_size, self.label_size, self.c_length], dtype='float32', name='image')
@@ -15,7 +14,7 @@ class TRAIN:
         if sess is not None:
             self.sess = sess
 
-    def train(self, iteration):
+    def test(self):
         # images = low resolution, labels = high resolution
         sess = self.sess
 
@@ -32,20 +31,16 @@ class TRAIN:
         # pred size = 513 * 668
         label_y = label_y[6:519, 6:674]
 
-        with tf.name_scope("mse_loss"):
-            loss = tf.reduce_mean(tf.square(self.y - prediction))
-        optimize = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
+        with tf.name_scope("PSNR"):
+            psnr = 10 * tf.log(tf.reciprocal(tf.reduce_mean(tf.square(self.y - prediction)))) / tf.log(tf.constant(10))
 
         init = tf.global_variables_initializer()
         sess.run(init)
 
-        saver = tf.train.Saver(max_to_keep=5)
+        saver = tf.train.Saver()
 
-        for i in range(iteration):
-            mse_loss, _ = sess.run([loss, optimize], feed_dict={self.x: image_y, self.y: label_y})
+        saver.restore(sess, self.save_path)
 
-            if (i + 1) % 5 == 0:
-                print('In', i+1, 'epoch, current loss is', mse_loss)
-                saver.save(sess, save_path=self.save_path)
+        final_psnr = sess.run(psnr, feed_dict={self.x: image_y, self.y: label_y})
 
-        print('Train completed')
+        print('Test PSNR is ', final_psnr)

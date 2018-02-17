@@ -3,9 +3,7 @@ from PIL import Image
 import tensorflow as tf
 
 class SRCNN:
-    def __init__(self, image_size, label_size, channel_length, image):
-        self.image_size = image_size
-        self.label_size = label_size
+    def __init__(self, channel_length, image):
         self.c_length = channel_length
         self.image = image
 
