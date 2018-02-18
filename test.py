@@ -64,3 +64,5 @@ class TEST:
         print(restore.shape)
         img = Image.fromarray(restore, mode='YCbCr')
         img.show()
+        img2 = img.convert('RGB')
+        img2.save('house_sr.png')
