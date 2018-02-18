@@ -5,13 +5,14 @@ from utils import preprocess
 
 
 class TRAIN:
-    def __init__(self, sess, channel_length, save_path):
+    def __init__(self, sess, channel_length, save_path, pre_trained):
         #self.image_size = image_size
         #self.label_size = label_size
         self.c_length = channel_length
         self.x = tf.placeholder(dtype='float32', shape=[None, 525, 680, self.c_length], name='image')
         self.y = tf.placeholder(dtype='float32', shape=[None, 513, 668, self.c_length], name='image')
         self.save_path = save_path
+        self.pre_trained = pre_trained
         if sess is not None:
             self.sess = sess
 
@@ -36,12 +37,14 @@ class TRAIN:
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
-        optimize = tf.train.AdamOptimizer(learning_rate=2e-3).minimize(loss)
+        optimize = tf.train.AdamOptimizer(learning_rate=2e-4).minimize(loss)
 
         init = tf.global_variables_initializer()
         sess.run(init)
 
         saver = tf.train.Saver(max_to_keep=5)
+        if self.pre_trained:
+            saver.restore(sess, self.save_path)
 
         for i in range(iteration):
             mse_loss, _ = sess.run([loss, optimize], feed_dict={self.x: image_y, self.y: label_y})
