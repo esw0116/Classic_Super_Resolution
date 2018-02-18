@@ -1,5 +1,10 @@
 import numpy as np
+import os
+import glob
 from PIL import Image
+
+def load_data(path):
+    data_list = glob.glob(path, '*.png')
 
 
 def convert_btw_rgb_ycbcr(image, dir):
