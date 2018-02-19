@@ -10,7 +10,7 @@ class TRAIN:
         #self.label_size = label_size
         self.c_length = channel_length
         self.x = tf.placeholder(dtype='float32', shape=[None, 525, 680, self.c_length], name='image')
-        self.y = tf.placeholder(dtype='float32', shape=[None, 513, 668, self.c_length], name='image')
+        self.y = tf.placeholder(dtype='float32', shape=[None, 525, 680, self.c_length], name='image')
         self.save_path = save_path
         self.pre_trained = pre_trained
         if sess is not None:
@@ -31,9 +31,6 @@ class TRAIN:
 
         sr_model = SRCNN(channel_length=self.c_length, image=self.x)
         prediction = sr_model.build_model()
-
-        # pred size = 513 * 668
-        label_y = label_y[:, 6:519, 6:674, :]
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
