@@ -12,13 +12,13 @@ class SRCNN:
         [f1, f2, f3] = [9, 1, 5]
 
         w1, b1 = self.get_weight_bias(f1, c1, c2)
-        conv1 = tf.nn.bias_add(tf.nn.conv2d(self.image, w1, strides=[1,1,1,1], padding='VALID'), b1)
+        conv1 = tf.nn.bias_add(tf.nn.conv2d(self.image, w1, strides=[1,1,1,1], padding='SAME'), b1)
         relu1 = tf.nn.relu(conv1)
         w2, b2 = self.get_weight_bias(f2, c2, c3)
-        conv2 = tf.nn.bias_add(tf.nn.conv2d(relu1, w2, strides=[1,1,1,1], padding='VALID'), b2)
+        conv2 = tf.nn.bias_add(tf.nn.conv2d(relu1, w2, strides=[1,1,1,1], padding='SAME'), b2)
         relu2 = tf.nn.relu(conv2)
         w3, b3 = self.get_weight_bias(f3, c3, c1)
-        conv3 = tf.nn.bias_add(tf.nn.conv2d(relu2, w3, strides=[1, 1, 1, 1], padding='VALID'), b3)
+        conv3 = tf.nn.bias_add(tf.nn.conv2d(relu2, w3, strides=[1, 1, 1, 1], padding='SAME'), b3)
 
         return conv3
 
