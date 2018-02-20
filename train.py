@@ -24,7 +24,6 @@ class TRAIN:
         train_label_list = glob.glob('./dataset/training/gray/*.*')
 
         num_image = len(train_image_list)
-        print(num_image)
 
         sr_model = SRCNN(channel_length=self.c_length, image=self.x)
         prediction = sr_model.build_model()
@@ -65,19 +64,23 @@ class TRAIN:
         train_label_list = glob.glob('./dataset/training/gray/*.*')
 
         num_image = len(train_image_list)
-        print(num_image)
 
         sr_model = VDSR(channel_length=self.c_length, image=self.x)
-        prediction = sr_model.build_model()
+        prediction, l2_loss = sr_model.build_model()
+
+        learning_rate = tf.placeholder(dtype='float32', name='learning_rate')
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
-        optimize = tf.train.AdamOptimizer(learning_rate=1e-3)
+            loss += l2_loss
+        optimize = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
-        # gradient clipping
+        # gradient clipping = Adam can handle by itself
+        '''
         gvs = optimize.compute_gradients(loss=loss)
         capped_gvs = [(tf.clip_by_value(grad, -0.1, 0.1), var) for grad, var in gvs]
         train_op = optimize.apply_gradients(capped_gvs)
+        '''
 
         batch_size = 3
         num_batch = int(num_image/batch_size)
@@ -89,17 +92,24 @@ class TRAIN:
         if self.pre_trained:
             saver.restore(sess, self.save_path)
 
+        lr = 0.0001
+
         for i in range(iteration):
             total_mse_loss = 0
+            total_l2 = 0
+            if i % 100 == 99:
+                lr = lr * 0.9
+
             for j in range(num_batch):
                 batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
                                                                 (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
                 batch_residual = batch_label - batch_image
 
-                mse_loss, _ = sess.run([loss, train_op], feed_dict={self.x: batch_image, self.y: batch_residual})
-                total_mse_loss += mse_loss/num_batch
+                l2, total_loss, _ = sess.run([l2_loss, loss, optimize], feed_dict={self.x: batch_image, self.y: batch_residual, learning_rate: lr})
+                total_mse_loss += total_loss/num_batch
+                total_l2 += l2/num_batch
 
-            print('In', i+1, 'epoch, current loss is', total_mse_loss)
+            print('In', '%04d' %(i+1), 'epoch, current loss is', '{:.5f}'.format(total_mse_loss), '{:.5f}'.format(total_l2))
             saver.save(sess, save_path=self.save_path)
 
         print('Train completed')
