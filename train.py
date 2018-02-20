@@ -1,16 +1,16 @@
 import tensorflow as tf
-import numpy as np
+import glob
 from model import SRCNN
 from utils import preprocess
 
 
 class TRAIN:
-    def __init__(self, sess, channel_length, save_path, pre_trained):
-        #self.image_size = image_size
-        #self.label_size = label_size
+    def __init__(self, sess, channel_length, patch_size, save_path, pre_trained, num_patch_per_image):
+        self.patch_size = patch_size
+        self.num_patch_per_image = num_patch_per_image
         self.c_length = channel_length
-        self.x = tf.placeholder(dtype='float32', shape=[None, 525, 680, self.c_length], name='image')
-        self.y = tf.placeholder(dtype='float32', shape=[None, 525, 680, self.c_length], name='image')
+        self.x = tf.placeholder(dtype='float32', shape=[None, self.patch_size, self.patch_size, self.c_length], name='image')
+        self.y = tf.placeholder(dtype='float32', shape=[None, self.patch_size, self.patch_size, self.c_length], name='image')
         self.save_path = save_path
         self.pre_trained = pre_trained
         if sess is not None:
@@ -19,22 +19,22 @@ class TRAIN:
     def train(self, iteration):
         # images = low resolution, labels = high resolution
         sess = self.sess
+        #load data
+        train_image_list = glob.glob('./dataset/training/gray_low/*.*')
+        train_label_list = glob.glob('./dataset/training/gray/*.*')
 
-        # for training a particular image(one image)
-        image, label = preprocess.image_label_gen(image_path='sample/house_low.png', label_path='sample/house.png')
-        image_y = image[:, :, 0]
-        image_y = image_y[np.newaxis, :, :, np.newaxis]
-        label_y = label[:, :, 0]
-        label_y = label_y[np.newaxis, :, :, np.newaxis]
-
-        # img size = label size = 525 * 680
+        num_image = len(train_image_list)
+        print(num_image)
 
         sr_model = SRCNN(channel_length=self.c_length, image=self.x)
         prediction = sr_model.build_model()
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
-        optimize = tf.train.AdamOptimizer(learning_rate=2e-4).minimize(loss)
+        optimize = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
+
+        batch_size = 3
+        num_batch = int(num_image/batch_size)
 
         init = tf.global_variables_initializer()
         sess.run(init)
@@ -44,10 +44,15 @@ class TRAIN:
             saver.restore(sess, self.save_path)
 
         for i in range(iteration):
-            mse_loss, _ = sess.run([loss, optimize], feed_dict={self.x: image_y, self.y: label_y})
+            total_mse_loss = 0
+            for j in range(num_batch):
+                batch_image = preprocess.load_data(train_image_list, j * batch_size, (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
+                batch_label = preprocess.load_data(train_label_list, j * batch_size, (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
 
-            if (i + 1) % 5 == 0:
-                print('In', i+1, 'epoch, current loss is', mse_loss)
-                saver.save(sess, save_path=self.save_path)
+                mse_loss, _ = sess.run([loss, optimize], feed_dict={self.x: batch_image, self.y: batch_label})
+                total_mse_loss += mse_loss/num_batch
+
+            print('In', i+1, 'epoch, current loss is', total_mse_loss)
+            saver.save(sess, save_path=self.save_path)
 
         print('Train completed')
