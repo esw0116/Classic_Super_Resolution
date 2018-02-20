@@ -1,7 +1,11 @@
 import tensorflow as tf
 import glob
+import numpy as np
+from PIL import Image
+
 from model import SRCNN, VDSR
 from utils import preprocess
+
 
 
 class TRAIN:
@@ -9,8 +13,8 @@ class TRAIN:
         self.patch_size = patch_size
         self.num_patch_per_image = num_patch_per_image
         self.c_length = channel_length
-        self.x = tf.placeholder(dtype='float32', shape=[None, self.patch_size, self.patch_size, self.c_length], name='image')
-        self.y = tf.placeholder(dtype='float32', shape=[None, self.patch_size, self.patch_size, self.c_length], name='image')
+        self.x = tf.placeholder(dtype='float32', shape=[None, None, None, self.c_length], name='image')
+        self.y = tf.placeholder(dtype='float32', shape=[None, None, None, self.c_length], name='image')
         self.save_path = save_path
         self.pre_trained = pre_trained
         if sess is not None:
@@ -82,9 +86,6 @@ class TRAIN:
         train_op = optimize.apply_gradients(capped_gvs)
         '''
 
-        batch_size = 3
-        num_batch = int(num_image/batch_size)
-
         init = tf.global_variables_initializer()
         sess.run(init)
 
@@ -100,14 +101,16 @@ class TRAIN:
             if i % 100 == 99:
                 lr = lr * 0.9
 
-            for j in range(num_batch):
-                batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
-                                                                (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
-                batch_residual = batch_label - batch_image
+            for j in range(num_image):
+                train_image = np.array(Image.open(train_image_list[i]))
+                train_image = train_image[np.newaxis, :, :, np.newaxis]
+                train_label = np.array(Image.open(train_label_list[i]))
+                train_label = train_label[np.newaxis, :, :, np.newaxis]
+                residual = train_label - train_image
 
-                l2, total_loss, _ = sess.run([l2_loss, loss, optimize], feed_dict={self.x: batch_image, self.y: batch_residual, learning_rate: lr})
-                total_mse_loss += total_loss/num_batch
-                total_l2 += l2/num_batch
+                l2, total_loss, _ = sess.run([l2_loss, loss, optimize], feed_dict={self.x: train_image, self.y: residual, learning_rate: lr})
+                total_mse_loss += total_loss/num_image
+                total_l2 += l2/num_image
 
             print('In', '%04d' %(i+1), 'epoch, current loss is', '{:.5f}'.format(total_mse_loss), '{:.5f}'.format(total_l2))
             saver.save(sess, save_path=self.save_path)
