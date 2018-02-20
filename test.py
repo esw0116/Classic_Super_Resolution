@@ -52,4 +52,5 @@ class TEST:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                pred_image.show()
+                filename = './dataset/test/restored/{}.png'.format(i)
+                pred_image.save(filename)
