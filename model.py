@@ -43,7 +43,7 @@ class VDSR:
             conv.append(tf.layers.conv2d(conv[i], 64, [3, 3], padding='SAME', activation=tf.nn.relu,
                                          kernel_regularizer=regularizer))
 
-        conv_final = tf.layers.conv2d(conv[18], self.c_length, [3, 3], padding='SAME', activation=tf.nn.relu,
+        conv_final = tf.layers.conv2d(conv[18], self.c_length, [3, 3], padding='SAME', activation=None,
                                       kernel_regularizer=regularizer)
         l2_loss = tf.losses.get_regularization_loss()
         return conv_final, l2_loss
