@@ -39,7 +39,7 @@ class TRAIN:
         init = tf.global_variables_initializer()
         sess.run(init)
 
-        saver = tf.train.Saver(max_to_keep=5)
+        saver = tf.train.Saver(max_to_keep=1)
         if self.pre_trained:
             saver.restore(sess, self.save_path)
 
@@ -72,7 +72,12 @@ class TRAIN:
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
-        optimize = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
+        optimize = tf.train.AdamOptimizer(learning_rate=1e-3)
+
+        # gradient clipping
+        gvs = optimize.compute_gradients(loss=loss)
+        capped_gvs = [(tf.clip_by_value(grad, -0.1, 0.1), var) for grad, var in gvs]
+        train_op = optimize.apply_gradients(capped_gvs)
 
         batch_size = 3
         num_batch = int(num_image/batch_size)
@@ -91,7 +96,7 @@ class TRAIN:
                                                                 (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
                 batch_residual = batch_label - batch_image
 
-                mse_loss, _ = sess.run([loss, optimize], feed_dict={self.x: batch_image, self.y: batch_residual})
+                mse_loss, _ = sess.run([loss, train_op], feed_dict={self.x: batch_image, self.y: batch_residual})
                 total_mse_loss += mse_loss/num_batch
 
             print('In', i+1, 'epoch, current loss is', total_mse_loss)
