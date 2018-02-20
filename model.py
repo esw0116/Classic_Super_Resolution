@@ -27,3 +27,16 @@ class SRCNN:
                                                  stddev=1e-2), name='filter')
         bias = tf.Variable(tf.constant(0, shape=[c_length2], dtype='float32'), name='bias')
         return weight, bias
+
+class VDSR:
+    def __init__(self, channel_length, image):
+        self.c_length = channel_length
+        self.image = image
+
+    def build_model(self):
+        conv = []
+        conv.append(tf.layers.conv2d(self.image, 64, [3, 3], padding='SAME', activation=tf.nn.relu))
+        for i in range(18):
+            conv.append(tf.layers.conv2d(conv[i], 64, [3, 3], padding='SAME', activation=tf.nn.relu))
+        conv_final = tf.layers.conv2d(conv[18], self.c_length, [3, 3], padding='SAME', activation=tf.nn.relu)
+        return conv_final
