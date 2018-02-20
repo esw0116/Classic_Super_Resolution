@@ -34,9 +34,16 @@ class VDSR:
         self.image = image
 
     def build_model(self):
+        regularizer = tf.contrib.layers.l2_regularizer(0.0001)
         conv = []
-        conv.append(tf.layers.conv2d(self.image, 64, [3, 3], padding='SAME', activation=tf.nn.relu))
+        conv.append(tf.layers.conv2d(self.image, 64, [3, 3], padding='SAME', activation=tf.nn.relu,
+                                     kernel_regularizer=regularizer))
+
         for i in range(18):
-            conv.append(tf.layers.conv2d(conv[i], 64, [3, 3], padding='SAME', activation=tf.nn.relu))
-        conv_final = tf.layers.conv2d(conv[18], self.c_length, [3, 3], padding='SAME', activation=tf.nn.relu)
-        return conv_final
+            conv.append(tf.layers.conv2d(conv[i], 64, [3, 3], padding='SAME', activation=tf.nn.relu,
+                                         kernel_regularizer=regularizer))
+
+        conv_final = tf.layers.conv2d(conv[18], self.c_length, [3, 3], padding='SAME', activation=tf.nn.relu,
+                                      kernel_regularizer=regularizer)
+        l2_loss = tf.losses.get_regularization_loss()
+        return conv_final, l2_loss
