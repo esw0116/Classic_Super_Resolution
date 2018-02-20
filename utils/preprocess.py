@@ -9,13 +9,14 @@ def load_list(path):
     return data_list
 
 
-def load_data(list, start, end, patch_size, num_patch_per_image):
+def load_data(image_list, label_list, start, end, patch_size, num_patch_per_image):
     # start~ (end-1)
-    imagepatch = np.empty([num_patch_per_image * (end - start), patch_size, patch_size], dtype='float32')
+    image_patch = np.empty([num_patch_per_image * (end - start), patch_size, patch_size], dtype='float32')
+    label_patch = np.empty([num_patch_per_image * (end - start), patch_size, patch_size], dtype='float32')
     for i in range(start, end):
         #load image, extract Y component
-        temp_image = np.array(Image.open(list[i]))
-        # temp_image = temp_image[:, :, 0]
+        temp_image = np.array(Image.open(image_list[i]))
+        temp_label = np.array(Image.open(label_list[i]))
 
         w = temp_image.shape[0]
         h = temp_image.shape[1]
@@ -23,9 +24,13 @@ def load_data(list, start, end, patch_size, num_patch_per_image):
         rand_y = np.random.randint(h - patch_size, size=num_patch_per_image)
 
         for j in range(num_patch_per_image):
-            temp_patch = temp_image[rand_x[j]:rand_x[j]+patch_size, rand_y[j]:rand_y[j]+patch_size]
-            imagepatch[num_patch_per_image*(i-start)+j, :, :] = temp_patch
-    return imagepatch[:, :, :, np.newaxis]
+            temp_patch_image = temp_image[rand_x[j]:rand_x[j]+patch_size, rand_y[j]:rand_y[j]+patch_size]
+            image_patch[num_patch_per_image*(i-start)+j, :, :] = temp_patch_image
+
+            temp_patch_label = temp_label[rand_x[j]:rand_x[j]+patch_size, rand_y[j]:rand_y[j]+patch_size]
+            label_patch[num_patch_per_image * (i - start) + j, :, :] = temp_patch_label
+
+    return image_patch[:, :, :, np.newaxis], label_patch[:, :, :, np.newaxis]
 
 def convert_btw_rgb_ycbcr(image, dir):
     if dir:  # rgb 2 ycbcr
