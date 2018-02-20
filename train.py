@@ -46,8 +46,8 @@ class TRAIN:
         for i in range(iteration):
             total_mse_loss = 0
             for j in range(num_batch):
-                batch_image = preprocess.load_data(train_image_list, j * batch_size, (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
-                batch_label = preprocess.load_data(train_label_list, j * batch_size, (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
+                batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
+                                                                (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
 
                 mse_loss, _ = sess.run([loss, optimize], feed_dict={self.x: batch_image, self.y: batch_label})
                 total_mse_loss += mse_loss/num_batch
