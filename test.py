@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import glob
 from PIL import Image
-from model import SRCNN
+from model import SRCNN, VDSR
 from utils import preprocess
 
 class TEST:
@@ -14,7 +14,7 @@ class TEST:
         if sess is not None:
             self.sess = sess
 
-    def test(self, inference):
+    def test(self, mode, inference):
         # images = low resolution, labels = high resolution
         sess = self.sess
 
@@ -24,10 +24,13 @@ class TEST:
 
         num_image = len(test_image_list)
 
-        # img size = label size = 525 * 680
-
-        sr_model = SRCNN(channel_length=self.c_length, image=self.x)
-        prediction = sr_model.build_model()
+        assert mode == 'SRCNN' or mode == 'VDSR'
+        if mode == 'SRCNN':
+            sr_model = SRCNN(channel_length=self.c_length, image=self.x)
+            prediction = sr_model.build_model()
+        elif mode == 'VDSR':
+            sr_model = VDSR(channel_length=self.c_length, image=self.x)
+            prediction, _ = sr_model.build_model()
 
         with tf.name_scope("PSNR"):
             psnr = 10 * tf.log(255 * 255 * tf.reciprocal(tf.reduce_mean(tf.square(self.y - prediction)))) / tf.log(tf.constant(10, dtype='float32'))
@@ -43,14 +46,20 @@ class TEST:
             test_image = test_image[np.newaxis, :, :, np.newaxis]
             test_label = np.array(Image.open(test_label_list[i]))
             test_label = test_label[np.newaxis, :, :, np.newaxis]
+            test_residual  = test_label - test_image
 
-            final_psnr = sess.run(psnr, feed_dict={self.x: test_image, self.y: test_label})
+            if mode == 'SRCNN':
+                final_psnr = sess.run(psnr, feed_dict={self.x: test_image, self.y: test_label})
+            elif mode == 'VDSR':
+                final_psnr = sess.run(psnr, feed_dict={self.x: test_image, self.y: test_residual})
 
             print('Test PSNR is ', final_psnr)
 
             if inference:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
+                if mode == 'VDSR':
+                    pred += test_image
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                filename = './dataset/test/restored/{}.png'.format(i)
+                filename = './dataset/test/restored_vdsr/{}.png'.format(i)
                 pred_image.save(filename)
