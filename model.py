@@ -23,12 +23,15 @@ class SRCNN:
         return conv3
 
     def get_weight_bias(self, filter_size, c_length1, c_length2):
+        # Try 0.001 std
+        # Try kaiming initialization
         weight = tf.Variable(tf.truncated_normal([filter_size, filter_size, c_length1, c_length2], dtype='float32',
                                                  stddev=1e-2), name='filter')
         bias = tf.Variable(tf.constant(0, shape=[c_length2], dtype='float32'), name='bias')
         return weight, bias
 
 class VDSR:
+    # Try built-in skip connection
     def __init__(self, channel_length, image):
         self.c_length = channel_length
         self.image = image

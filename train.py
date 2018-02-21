@@ -34,6 +34,8 @@ class TRAIN:
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
+        # Try SGD optimizer
+        # Learning rate setting (1e-4 + 1e-5)
         optimize = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
 
         batch_size = 3
@@ -64,6 +66,7 @@ class TRAIN:
         # images = low resolution, labels = high resolution
         sess = self.sess
         #load data
+        # Use multi-scale images
         train_image_list = glob.glob('./dataset/training/gray_low/*.*')
         train_label_list = glob.glob('./dataset/training/gray/*.*')
 
@@ -96,6 +99,7 @@ class TRAIN:
         if self.pre_trained:
             saver.restore(sess, self.save_path)
 
+        # Try lr = 0.1
         lr = 0.0001
 
         for i in range(iteration):
