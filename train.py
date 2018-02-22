@@ -81,14 +81,15 @@ class TRAIN:
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
-            loss += l2_loss
+            loss += 1e-4 * l2_loss
 
+        #optimize = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
         optimize = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
 
-        # gradient clipping = Adam can handle by itself
 
+        # gradient clipping = Adam can handle by itself
         gvs = optimize.compute_gradients(loss=loss)
-        capped_gvs = [(tf.clip_by_value(grad, -1./learning_rate, 1./learning_rate), var) for grad, var in gvs]
+        capped_gvs = [(tf.clip_by_value(grad, -255./learning_rate, 255./learning_rate), var) for grad, var in gvs]
         train_op = optimize.apply_gradients(capped_gvs)
 
 
@@ -105,7 +106,7 @@ class TRAIN:
         lr = 1e-1
 
         for i in range(iteration):
-            total_mse_loss = 0
+            total_loss = 0 # mse + l2
             total_l2 = 0
             if i % 20 == 19:
                 lr = lr * 0.1
@@ -122,11 +123,11 @@ class TRAIN:
                 residual = train_label - train_image
                 '''
 
-                l2, total_loss, _ = sess.run([l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
-                total_mse_loss += total_loss/num_batch
+                l2, total_loss, _ = sess.run([1e-4 * l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
+                total_loss += total_loss/num_batch
                 total_l2 += l2/num_batch
 
-            print('In', '%04d' %(i+1), 'epoch, current loss is', '{:.5f}'.format(total_mse_loss), '{:.5f}'.format(total_l2))
+            print('In', '%04d' %(i+1), 'epoch, current loss is', '{:.5f}'.format(total_loss - total_l2), '{:.5f}'.format(total_l2))
             saver.save(sess, save_path=self.save_path)
 
         print('Train completed')
