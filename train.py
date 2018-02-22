@@ -81,15 +81,13 @@ class TRAIN:
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
-            loss += l2_loss
-        optimize = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
+            loss += 1e-4 * l2_loss
+        optimize = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
 
         # gradient clipping = Adam can handle by itself
-        '''
         gvs = optimize.compute_gradients(loss=loss)
         capped_gvs = [(tf.clip_by_value(grad, -0.1, 0.1), var) for grad, var in gvs]
         train_op = optimize.apply_gradients(capped_gvs)
-        '''
 
         batch_size = 3
         num_batch = int(num_image/batch_size)
@@ -101,19 +99,18 @@ class TRAIN:
         if self.pre_trained:
             saver.restore(sess, self.save_path)
 
-        lr = 0.0001
+        lr = 0.1
 
         for i in range(iteration):
             total_mse_loss = 0
             total_l2 = 0
-            if i % 100 == 99:
-                lr = lr * 0.9
+            if i % 20 == 19:
+                lr = lr * 0.1
 
             for j in range(num_batch):
                 batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
                                                                 (j + 1) * batch_size, self.patch_size,
                                                                 self.num_patch_per_image)
-                batch_residual = batch_label - batch_image
                 '''
                 train_image = np.array(Image.open(train_image_list[i]))
                 train_image = train_image[np.newaxis, :, :, np.newaxis]
@@ -122,7 +119,7 @@ class TRAIN:
                 residual = train_label - train_image
                 '''
 
-                l2, total_loss, _ = sess.run([l2_loss, loss, optimize], feed_dict={self.x: batch_image, self.y: batch_residual, learning_rate: lr})
+                l2, total_loss, _ = sess.run([l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
                 total_mse_loss += total_loss/num_batch
                 total_l2 += l2/num_batch
 
