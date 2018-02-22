@@ -55,6 +55,7 @@ class VDSR:
         self.image = image
 
     def build_model(self):
+        '''
         w = [None] * 20
         b = [None] * 20
         conv = [None] * 20
@@ -78,7 +79,8 @@ class VDSR:
 
         return conv_fin, l2_loss
         '''
-        regularizer = tf.contrib.layers.l2_regularizer(0.0001)
+
+        regularizer = tf.contrib.layers.l2_regularizer(1e-4)
         conv = []
         conv.append(tf.layers.conv2d(self.image, 64, [3, 3], padding='SAME', activation=tf.nn.relu,
                                      kernel_regularizer=regularizer))
@@ -93,4 +95,3 @@ class VDSR:
 
         conv_final += self.image
         return conv_final, l2_loss
-        '''
