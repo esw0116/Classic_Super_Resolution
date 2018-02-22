@@ -81,13 +81,16 @@ class TRAIN:
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
-            loss += 1e-4 * l2_loss
-        optimize = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+            loss += l2_loss
+
+        optimize = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
 
         # gradient clipping = Adam can handle by itself
+
         gvs = optimize.compute_gradients(loss=loss)
         capped_gvs = [(tf.clip_by_value(grad, -0.1/learning_rate, 0.1/learning_rate), var) for grad, var in gvs]
         train_op = optimize.apply_gradients(capped_gvs)
+
 
         batch_size = 3
         num_batch = int(num_image/batch_size)
@@ -99,7 +102,7 @@ class TRAIN:
         if self.pre_trained:
             saver.restore(sess, self.save_path)
 
-        lr = 0.1
+        lr = 1e-1
 
         for i in range(iteration):
             total_mse_loss = 0
