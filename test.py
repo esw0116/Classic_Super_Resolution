@@ -42,6 +42,8 @@ class TEST:
         saver = tf.train.Saver()
 
         saver.restore(sess, self.save_path)
+
+        avg_psnr = 0
         for i in range(num_image):
             test_image = np.array(Image.open(test_image_list[i]))
             test_image = test_image[np.newaxis, :, :, np.newaxis]
@@ -51,12 +53,13 @@ class TEST:
             final_psnr = sess.run(psnr, feed_dict={self.x: test_image, self.y: test_label})
 
             print('Test PSNR is ', final_psnr)
+            avg_psnr += final_psnr
 
             if inference:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                filename = './dataset/test/restored_vdsr/{}.png'.format(i)
+                filename = './restored_srcnn/20180222/{}.png'.format(i)
                 pred_image.save(filename)
                 if mode == 'VDSR':
                     res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
@@ -64,3 +67,5 @@ class TEST:
                     res_image = Image.fromarray(res)
                     filename = './dataset/test/restored_vdsr/{}_res.png'.format(i)
                     res_image.save(filename)
+
+        print('Avg PSNR is ', avg_psnr/5)
