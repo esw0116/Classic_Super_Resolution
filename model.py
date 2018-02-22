@@ -19,13 +19,16 @@ def he_normal(seed=None, scale=1.0):
     return tf.contrib.layers.variance_scaling_initializer(factor=2.0 * scale, mode='FAN_IN',
                                                           uniform=False, seed=seed, dtype=tf.float32)
 
-def get_weight_bias(filter_size, c_length1, c_length2, name):
+
+def get_weight_bias(filter_size, c_length1, c_length2, name, scale = math.sqrt(2)):
+    '''
     weight = tf.Variable(tf.random_normal(shape=[filter_size, filter_size, c_length1, c_length2], stddev=1e-3),
                          name=name+'_filter')
     '''
+
     weight = tf.get_variable(shape=[filter_size, filter_size, c_length1, c_length2], name=name+'_filter',
-                             initializer=he_normal(scale=math.sqrt(2)))
-                             '''
+                             initializer=he_normal(scale=scale))
+
     bias = tf.Variable(tf.constant(0, shape=[c_length2], dtype='float32'), name=name+'_bias')
     return weight, bias
 
@@ -55,7 +58,6 @@ class VDSR:
         self.image = image
 
     def build_model(self):
-        '''
         w = [None] * 20
         b = [None] * 20
         conv = [None] * 20
@@ -68,18 +70,17 @@ class VDSR:
         l2_loss += tf.nn.l2_loss(w[0])
         for i in range(1, 19):
             w[i], b[i] = get_weight_bias(3, 64, 64, name='Conv'+str(i))
-            conv[i] = tf.nn.bias_add(tf.nn.conv2d(conv[i-1], w[i], strides=[1,1,1,1], padding='SAME'), b[i])
+            conv[i] = tf.nn.bias_add(tf.nn.conv2d(relu[i-1], w[i], strides=[1,1,1,1], padding='SAME'), b[i])
             relu[i] = tf.nn.relu(conv[i])
             l2_loss += tf.nn.l2_loss(w[i])
-        w[19], b[19] = get_weight_bias(3, 64, self.c_length, name='Conv19')
-        conv[19] = tf.nn.bias_add(tf.nn.conv2d(conv[18], w[19], strides=[1,1,1,1], padding='SAME'), b[19])
+        w[19], b[19] = get_weight_bias(3, 64, self.c_length, name='Conv19', scale=1.)
+        conv[19] = tf.nn.bias_add(tf.nn.conv2d(relu[18], w[19], strides=[1,1,1,1], padding='SAME'), b[19])
         l2_loss += tf.nn.l2_loss(w[19])
 
-        conv_fin = conv[19] + self.image
+        conv_fin = tf.add(conv[19], self.image)
 
         return conv_fin, l2_loss
         '''
-
         regularizer = tf.contrib.layers.l2_regularizer(1e-4)
         conv = []
         conv.append(tf.layers.conv2d(self.image, 64, [3, 3], padding='SAME', activation=tf.nn.relu,
@@ -95,3 +96,4 @@ class VDSR:
 
         conv_final += self.image
         return conv_final, l2_loss
+        '''
