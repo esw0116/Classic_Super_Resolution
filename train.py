@@ -89,12 +89,12 @@ class TRAIN:
 
         # gradient clipping = Adam can handle by itself
         gvs = optimize.compute_gradients(loss=loss)
-        capped_gvs = [(tf.clip_by_value(grad, -1./learning_rate, 1./learning_rate), var) for grad, var in gvs]
+        capped_gvs = [(tf.clip_by_value(grad, -5./learning_rate, 5./learning_rate), var) for grad, var in gvs]
         train_op = optimize.apply_gradients(capped_gvs)
 
-
-        batch_size = 3
-        num_batch = int(num_image/batch_size)
+        batch_size = 5
+        num_batch = int((num_image - 1)/batch_size) + 1
+        print(num_batch)
 
         init = tf.global_variables_initializer()
         sess.run(init)
@@ -113,7 +113,7 @@ class TRAIN:
 
             for j in range(num_batch):
                 batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
-                                                                (j + 1) * batch_size, self.patch_size,
+                                                                min((j + 1) * batch_size, num_image), self.patch_size,
                                                                 self.num_patch_per_image)
                 '''
                 train_image = np.array(Image.open(train_image_list[i]))
