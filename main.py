@@ -20,4 +20,7 @@ with tf.Session(config=config) as sess:
     '''
     infer_one_image = TEST(sess=sess, channel_length=channel_length, save_path=save_path)
     infer_one_image.test(mode='SRCNN', inference=True)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 90c90d0c5dec01a4da694531beb7ceb41d917cb9
