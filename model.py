@@ -40,8 +40,12 @@ class SRCNN:
         return [w1, b1, w2, b2], [w3, b3], conv3
 
     def get_weight_bias(self, filter_size, c_length1, c_length2, name):
+        weight = tf.Variable(tf.random_normal(shape=[filter_size, filter_size, c_length1, c_length2], stddev=1e-3),
+                             name=name+'_filter')
+        '''
         weight = tf.get_variable(shape=[filter_size, filter_size, c_length1, c_length2], name=name+'_filter',
-                                 initializer=tf.contrib.layers.xavier_initializer())
+                                 initializer=he_normal(scale=math.sqrt(2)))
+                                 '''
         bias = tf.Variable(tf.constant(0, shape=[c_length2], dtype='float32'), name=name+'_bias')
         return weight, bias
 
