@@ -89,7 +89,7 @@ class TRAIN:
 
         # gradient clipping = Adam can handle by itself
         gvs = optimize.compute_gradients(loss=loss)
-        capped_gvs = [(tf.clip_by_value(grad, -100./learning_rate, 100./learning_rate), var) for grad, var in gvs]
+        capped_gvs = [(tf.clip_by_value(grad, -10./learning_rate, 10./learning_rate), var) for grad, var in gvs]
         train_op = optimize.apply_gradients(capped_gvs)
 
 
