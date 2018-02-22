@@ -30,11 +30,14 @@ class TRAIN:
         num_image = len(train_image_list)
 
         sr_model = SRCNN(channel_length=self.c_length, image=self.x)
-        prediction = sr_model.build_model()
+        v1, v2, prediction = sr_model.build_model()
 
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
-        optimize = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
+        train_op1 = tf.train.GradientDescentOptimizer(learning_rate=1e-4).minimize(loss, var_list=v1)
+        train_op2 = tf.train.GradientDescentOptimizer(learning_rate=1e-5).minimize(loss, var_list=v2)
+        train_op = tf.group(train_op1, train_op2)
+        # optimize = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)
 
         batch_size = 3
         num_batch = int(num_image/batch_size)
@@ -52,7 +55,7 @@ class TRAIN:
                 batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
                                                                 (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
 
-                mse_loss, _ = sess.run([loss, optimize], feed_dict={self.x: batch_image, self.y: batch_label})
+                mse_loss, _ = sess.run([loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label})
                 total_mse_loss += mse_loss/num_batch
 
             print('In', i+1, 'epoch, current loss is', total_mse_loss)
