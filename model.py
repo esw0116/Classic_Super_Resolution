@@ -20,34 +20,28 @@ def he_normal(seed=None, scale=1.0):
                                                           uniform=False, seed=seed, dtype=tf.float32)
 
 
-def get_weight_bias(filter_size, c_length1, c_length2, name, scale = math.sqrt(2)):
-    '''
-    weight = tf.Variable(tf.random_normal(shape=[filter_size, filter_size, c_length1, c_length2], stddev=1e-3),
-                         name=name+'_filter')
-    '''
-
-    weight = tf.get_variable(shape=[filter_size, filter_size, c_length1, c_length2], name=name+'_filter',
-                             initializer=he_normal(scale=scale))
-
-    bias = tf.Variable(tf.constant(0, shape=[c_length2], dtype='float32'), name=name+'_bias')
-    return weight, bias
-
 class SRCNN:
     def __init__(self, channel_length, image):
         self.c_length = channel_length
         self.image = image
 
+    def get_weight_bias(self, filter_size, c_length1, c_length2, name):
+        weight = tf.Variable(tf.random_normal(shape=[filter_size, filter_size, c_length1, c_length2], stddev=1e-3),
+                             name=name + '_filter')
+        bias = tf.Variable(tf.constant(0, shape=[c_length2], dtype='float32'), name=name + '_bias')
+        return weight, bias
+
     def build_model(self):
         [c1, c2, c3] = [self.c_length, 64, 32]
         [f1, f2, f3] = [9, 1, 5]
 
-        w1, b1 = get_weight_bias(f1, c1, c2, name='Conv1')
+        w1, b1 = self.get_weight_bias(f1, c1, c2, name='Conv1')
         conv1 = tf.nn.bias_add(tf.nn.conv2d(self.image, w1, strides=[1,1,1,1], padding='SAME'), b1)
         relu1 = tf.nn.relu(conv1)
-        w2, b2 = get_weight_bias(f2, c2, c3, name='Conv2')
+        w2, b2 = self.get_weight_bias(f2, c2, c3, name='Conv2')
         conv2 = tf.nn.bias_add(tf.nn.conv2d(relu1, w2, strides=[1,1,1,1], padding='SAME'), b2)
         relu2 = tf.nn.relu(conv2)
-        w3, b3 = get_weight_bias(f3, c3, c1, name='Conv3')
+        w3, b3 = self.get_weight_bias(f3, c3, c1, name='Conv3')
         conv3 = tf.nn.bias_add(tf.nn.conv2d(relu2, w3, strides=[1, 1, 1, 1], padding='SAME'), b3)
 
         return [w1, b1, w2, b2], [w3, b3], conv3
@@ -57,6 +51,12 @@ class VDSR:
         self.c_length = channel_length
         self.image = image
 
+    def get_weight_bias(self, filter_size, c_length1, c_length2, name, scale=math.sqrt(2)):
+        weight = tf.get_variable(shape=[filter_size, filter_size, c_length1, c_length2], name=name+'_filter',
+                                 initializer=he_normal(scale=scale))
+        bias = tf.Variable(tf.constant(0, shape=[c_length2], dtype='float32'), name=name + '_bias')
+        return weight, bias
+
     def build_model(self):
         w = [None] * 20
         b = [None] * 20
@@ -64,16 +64,16 @@ class VDSR:
         relu = [None] * 19
         l2_loss = 0
 
-        w[0], b[0] = get_weight_bias(3, self.c_length, 64, name='Conv0')
+        w[0], b[0] = self.get_weight_bias(3, self.c_length, 64, name='Conv0')
         conv[0] = tf.nn.bias_add(tf.nn.conv2d(self.image, w[0], strides=[1,1,1,1], padding='SAME'), b[0])
         relu[0] = tf.nn.relu(conv[0])
         l2_loss += tf.nn.l2_loss(w[0])
         for i in range(1, 19):
-            w[i], b[i] = get_weight_bias(3, 64, 64, name='Conv'+str(i))
+            w[i], b[i] = self.get_weight_bias(3, 64, 64, name='Conv'+str(i))
             conv[i] = tf.nn.bias_add(tf.nn.conv2d(relu[i-1], w[i], strides=[1,1,1,1], padding='SAME'), b[i])
             relu[i] = tf.nn.relu(conv[i])
             l2_loss += tf.nn.l2_loss(w[i])
-        w[19], b[19] = get_weight_bias(3, 64, self.c_length, name='Conv19', scale=1.)
+        w[19], b[19] = self.get_weight_bias(3, 64, self.c_length, name='Conv19', scale=1.)
         conv[19] = tf.nn.bias_add(tf.nn.conv2d(relu[18], w[19], strides=[1,1,1,1], padding='SAME'), b[19])
         l2_loss += tf.nn.l2_loss(w[19])
 
