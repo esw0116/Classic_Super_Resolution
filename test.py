@@ -27,7 +27,7 @@ class TEST:
         assert mode == 'SRCNN' or mode == 'VDSR'
         if mode == 'SRCNN':
             sr_model = SRCNN(channel_length=self.c_length, image=self.x)
-            prediction = sr_model.build_model()
+            _, _, prediction = sr_model.build_model()
         elif mode == 'VDSR':
             sr_model = VDSR(channel_length=self.c_length, image=self.x)
             residual, _ = sr_model.build_model()
