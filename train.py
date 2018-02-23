@@ -35,8 +35,8 @@ class TRAIN:
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
 
-        train_op1 = tf.train.GradientDescentOptimizer(learning_rate=1e-4).minimize(loss, var_list=v1)
-        train_op2 = tf.train.GradientDescentOptimizer(learning_rate=1e-5).minimize(loss, var_list=v2)
+        train_op1 = tf.train.GradientDescentOptimizer(learning_rate=5e-5).minimize(loss, var_list=v1)
+        train_op2 = tf.train.GradientDescentOptimizer(learning_rate=5e-6).minimize(loss, var_list=v2)
         train_op = tf.group(train_op1, train_op2)
 
         # optimize = tf.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(loss)
