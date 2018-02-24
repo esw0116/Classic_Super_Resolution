@@ -9,10 +9,23 @@ def load_list(path):
     return data_list
 
 
+def data_augmentation(image):
+    aug1 = np.fliplr(image)         # flip lr
+    aug2 = np.flipud(image)         # flip ud
+    aug3 = np.rot90(image, k=1)     # rot 90
+    aug4 = np.rot90(image, k=2)     # rot 180
+    aug5 = np.rot90(image, k=3)     # rot 270
+    aug6 = np.fliplr(aug3)          # rot 90 + flip lr
+    aug7 = np.flipud(aug4)          # rot 90 + flip ud
+
+    return np.stack([image, aug1, aug2, aug3, aug4, aug5, aug6, aug7], axis=0)
+
+
 def load_data(image_list, label_list, start, end, patch_size, num_patch_per_image):
     # start~ (end-1)
-    image_patch = np.empty([num_patch_per_image * (end - start), patch_size, patch_size], dtype='float32')
-    label_patch = np.empty([num_patch_per_image * (end - start), patch_size, patch_size], dtype='float32')
+    # added data augmentation to eight
+    image_patch = np.empty([num_patch_per_image * (end - start), 8, patch_size, patch_size], dtype='float32')
+    label_patch = np.empty([num_patch_per_image * (end - start), 8, patch_size, patch_size], dtype='float32')
     for i in range(start, end):
         #load image, extract Y component
         temp_image = np.array(Image.open(image_list[i]))
@@ -20,15 +33,18 @@ def load_data(image_list, label_list, start, end, patch_size, num_patch_per_imag
 
         w = temp_image.shape[0]
         h = temp_image.shape[1]
+
         rand_x = np.random.randint(w - patch_size, size=num_patch_per_image)
         rand_y = np.random.randint(h - patch_size, size=num_patch_per_image)
 
         for j in range(num_patch_per_image):
             temp_patch_image = temp_image[rand_x[j]:rand_x[j]+patch_size, rand_y[j]:rand_y[j]+patch_size]
-            image_patch[num_patch_per_image*(i-start)+j, :, :] = temp_patch_image
+            temp_patch_image_augmented = data_augmentation(temp_patch_image)
+            image_patch[num_patch_per_image*(i-start)+j, :, :, :] = temp_patch_image
 
             temp_patch_label = temp_label[rand_x[j]:rand_x[j]+patch_size, rand_y[j]:rand_y[j]+patch_size]
-            label_patch[num_patch_per_image * (i - start) + j, :, :] = temp_patch_label
+            temp_patch_label_augmented = data_augmentation(temp_patch_label)
+            label_patch[num_patch_per_image * (i - start) + j, :, :, :] = temp_patch_label
 
     return image_patch[:, :, :, np.newaxis], label_patch[:, :, :, np.newaxis]
 
