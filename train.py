@@ -24,10 +24,12 @@ class TRAIN:
         # images = low resolution, labels = high resolution
         sess = self.sess
         #load data
-        train_image_list = glob.glob('./dataset/training/gray_low/*.*')
+        train_image_list_x2 = glob.glob('./dataset/training/X2/*.*')
+        train_image_list_x3 = glob.glob('./dataset/training/X3/*.*')
+        train_image_list_x4 = glob.glob('./dataset/training/X4/*.*')
         train_label_list = glob.glob('./dataset/training/gray/*.*')
 
-        num_image = len(train_image_list)
+        num_image = len(train_label_list)
 
         sr_model = SRCNN(channel_length=self.c_length, image=self.x)
         v1, v2, prediction = sr_model.build_model()
@@ -54,11 +56,21 @@ class TRAIN:
         for i in range(iteration):
             total_mse_loss = 0
             for j in range(num_batch):
-                batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
-                                                                (j + 1) * batch_size, self.patch_size, self.num_patch_per_image)
-
-                mse_loss, _ = sess.run([loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label})
-                total_mse_loss += mse_loss/num_batch
+                for k in range(3):
+                    if k == 0:
+                        batch_image, batch_label = preprocess.load_data(train_image_list_x2, train_label_list, j * batch_size,
+                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
+                                                                        self.num_patch_per_image)
+                    if k == 1:
+                        batch_image, batch_label = preprocess.load_data(train_image_list_x3, train_label_list, j * batch_size,
+                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
+                                                                        self.num_patch_per_image)
+                    if k == 2:
+                        batch_image, batch_label = preprocess.load_data(train_image_list_x4, train_label_list, j * batch_size,
+                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
+                                                                        self.num_patch_per_image)
+                    mse_loss, _ = sess.run([loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label})
+                    total_mse_loss += mse_loss/(num_batch * 3)
 
             print('In', i+1, 'epoch, current loss is', total_mse_loss)
             saver.save(sess, save_path=self.save_path)
@@ -69,10 +81,12 @@ class TRAIN:
         # images = low resolution, labels = high resolution
         sess = self.sess
         #load data
-        train_image_list = glob.glob('./dataset/training/gray_low/*.*')
+        train_image_list_x2 = glob.glob('./dataset/training/X2/*.*')
+        train_image_list_x3 = glob.glob('./dataset/training/X3/*.*')
+        train_image_list_x4 = glob.glob('./dataset/training/X4/*.*')
         train_label_list = glob.glob('./dataset/training/gray/*.*')
 
-        num_image = len(train_image_list)
+        num_image = len(train_label_list)
 
         sr_model = VDSR(channel_length=self.c_length, image=self.x)
         prediction, l2_loss = sr_model.build_model()
@@ -99,7 +113,7 @@ class TRAIN:
         init = tf.global_variables_initializer()
         sess.run(init)
 
-        saver = tf.train.Saver(max_to_keep=5)
+        saver = tf.train.Saver(max_to_keep=2)
         if self.pre_trained:
             saver.restore(sess, self.save_path)
 
@@ -110,22 +124,24 @@ class TRAIN:
             total_l2 = 0
             if i % 20 == 19:
                 lr = lr * 0.1
-
             for j in range(num_batch):
-                batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
-                                                                min((j + 1) * batch_size, num_image), self.patch_size,
-                                                                self.num_patch_per_image)
-                '''
-                train_image = np.array(Image.open(train_image_list[i]))
-                train_image = train_image[np.newaxis, :, :, np.newaxis]
-                train_label = np.array(Image.open(train_label_list[i]))
-                train_label = train_label[np.newaxis, :, :, np.newaxis]
-                residual = train_label - train_image
-                '''
+                for k in range(3):
+                    if k == 0:
+                        batch_image, batch_label = preprocess.load_data(train_image_list_x2, train_label_list, j * batch_size,
+                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
+                                                                        self.num_patch_per_image)
+                    if k == 1:
+                        batch_image, batch_label = preprocess.load_data(train_image_list_x3, train_label_list, j * batch_size,
+                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
+                                                                        self.num_patch_per_image)
+                    if k == 2:
+                        batch_image, batch_label = preprocess.load_data(train_image_list_x4, train_label_list, j * batch_size,
+                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
+                                                                        self.num_patch_per_image)
 
-                l2, total_loss, _ = sess.run([1e-4 * l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
-                total_loss += total_loss/num_batch
-                total_l2 += l2/num_batch
+                    l2, total_loss, _ = sess.run([1e-4 * l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
+                    total_loss += total_loss/(num_batch * 3)
+                    total_l2 += l2/(num_batch * 3)
 
             print('In', '%04d' %(i+1), 'epoch, current loss is', '{:.5f}'.format(total_loss - total_l2), '{:.5f}'.format(total_l2))
             saver.save(sess, save_path=self.save_path)
