@@ -21,9 +21,9 @@ with tf.Session(config=config) as sess:
 
     if phase == 'train':
         train_images = TRAIN(sess=sess, channel_length=channel_length, save_path=save_path, pre_trained=False, patch_size=33, num_patch_per_image=20)
-        if model == 'srcnn':
+        if model == 'SRCNN':
             train_images.train_srcnn(iteration=5000)
-        elif model == 'vdsr':
+        elif model == 'VDSR':
             train_images.train_vdsr(iteration=100)
 
     elif phase == 'test':
