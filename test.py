@@ -19,13 +19,12 @@ class TEST:
         sess = self.sess
 
         # for training a particular image(one image)
-        test_image_list = glob.glob('./dataset/test/gray_low/*.*')
         test_image_list_x2 = glob.glob('./dataset/training/X2/*.*')
         test_image_list_x3 = glob.glob('./dataset/training/X3/*.*')
         test_image_list_x4 = glob.glob('./dataset/training/X4/*.*')
         test_label_list = glob.glob('./dataset/test/gray/*.*')
 
-        num_image = len(test_image_list)
+        num_image = len(test_label_list)
 
         assert mode == 'SRCNN' or mode == 'VDSR'
         if mode == 'SRCNN':
