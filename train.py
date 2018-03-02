@@ -138,8 +138,8 @@ class TRAIN:
                                                                         min((j + 1) * batch_size, num_image), self.patch_size,
                                                                         self.num_patch_per_image)
 
-                    l2, total_loss, _ = sess.run([l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
-                    total_loss += total_loss/(num_batch * 3)
+                    l2, losses, _ = sess.run([l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
+                    total_loss += losses/(num_batch * 3)
                     total_l2 += 1e-4 * l2/(num_batch * 3)
 
             print('In', '%04d' %(i+1), 'epoch, current loss is', '{:.5f}'.format(total_loss - total_l2), '{:.5f}'.format(total_l2))
