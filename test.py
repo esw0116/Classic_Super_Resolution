@@ -33,6 +33,7 @@ class TEST:
         elif mode == 'VDSR':
             sr_model = VDSR(channel_length=self.c_length, image=self.x)
             prediction, _ = sr_model.build_model()
+            residual = prediction - self.x
 
         with tf.name_scope("PSNR"):
             psnr = 10 * tf.log(255 * 255 * tf.reciprocal(tf.reduce_mean(tf.square(self.y - prediction)))) / tf.log(tf.constant(10, dtype='float32'))
@@ -61,7 +62,7 @@ class TEST:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                filename = './restored_srcnn/20180302/{}.png'.format(i)
+                filename = './restored_vdsr/20180302/{}.png'.format(i)
                 pred_image.save(filename)
                 if mode == 'VDSR':
                     res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
@@ -92,7 +93,7 @@ class TEST:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                filename = './restored_srcnn/20180302/{}.png'.format(i)
+                filename = './restored_vdsr/20180302/{}.png'.format(i)
                 pred_image.save(filename)
                 if mode == 'VDSR':
                     res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
@@ -119,7 +120,7 @@ class TEST:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                filename = './restored_srcnn/20180302/{}.png'.format(i)
+                filename = './restored_vdsr/20180302/{}.png'.format(i)
                 pred_image.save(filename)
                 if mode == 'VDSR':
                     res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
