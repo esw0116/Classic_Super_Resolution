@@ -19,10 +19,10 @@ class TEST:
         sess = self.sess
 
         # for training a particular image(one image)
-        test_image_list_x2 = glob.glob('./dataset/training/X2/*.*')
-        test_image_list_x3 = glob.glob('./dataset/training/X3/*.*')
-        test_image_list_x4 = glob.glob('./dataset/training/X4/*.*')
-        test_label_list = glob.glob('./dataset/test/gray/*.*')
+        test_image_list_x2 = sorted(glob.glob('./dataset/test/X2/*.*'))
+        test_image_list_x3 = sorted(glob.glob('./dataset/test/X3/*.*'))
+        test_image_list_x4 = sorted(glob.glob('./dataset/test/X4/*.*'))
+        test_label_list = sorted(glob.glob('./dataset/test/gray/*.*'))
 
         num_image = len(test_label_list)
 
@@ -50,6 +50,7 @@ class TEST:
             test_image = test_image[np.newaxis, :, :, np.newaxis]
             test_label = np.array(Image.open(test_label_list[i]))
             test_label = test_label[np.newaxis, :, :, np.newaxis]
+            print(test_image.shape, test_label.shape)
 
             final_psnr = sess.run(psnr, feed_dict={self.x: test_image, self.y: test_label})
 
