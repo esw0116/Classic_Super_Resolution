@@ -51,7 +51,7 @@ class TEST:
             test_image = test_image[np.newaxis, :, :, np.newaxis]
             test_label = np.array(Image.open(test_label_list[i]))
             test_label = test_label[np.newaxis, :, :, np.newaxis]
-            print(test_image.shape, test_label.shape)
+            # print(test_image.shape, test_label.shape)
 
             final_psnr = sess.run(psnr, feed_dict={self.x: test_image, self.y: test_label})
 
@@ -62,13 +62,13 @@ class TEST:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                filename = './restored_vdsr/20180302/{}.png'.format(i)
+                filename = './restored_vdsr/20180302/{}_X2.png'.format(i)
                 pred_image.save(filename)
                 if mode == 'VDSR':
                     res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
                     res = np.squeeze(res).astype(dtype='uint8')
                     res_image = Image.fromarray(res)
-                    filename = './restored_vdsr/20180302/{}_res.png'.format(i)
+                    filename = './restored_vdsr/20180302/{}_X2_res.png'.format(i)
                     res_image.save(filename)
 
         print('X2 : Avg PSNR is ', avg_psnr/5)
@@ -93,13 +93,13 @@ class TEST:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                filename = './restored_vdsr/20180302/{}.png'.format(i)
+                filename = './restored_vdsr/20180302/{}_X3.png'.format(i)
                 pred_image.save(filename)
                 if mode == 'VDSR':
                     res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
                     res = np.squeeze(res).astype(dtype='uint8')
                     res_image = Image.fromarray(res)
-                    filename = './restored_vdsr/20180302/{}_res.png'.format(i)
+                    filename = './restored_vdsr/20180302/{}_X3_res.png'.format(i)
                     res_image.save(filename)
 
         print('X3 : Avg PSNR is ', avg_psnr/5)
@@ -120,13 +120,13 @@ class TEST:
                 pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                 pred = np.squeeze(pred).astype(dtype='uint8')
                 pred_image = Image.fromarray(pred)
-                filename = './restored_vdsr/20180302/{}.png'.format(i)
+                filename = './restored_vdsr/20180302/{}_X4.png'.format(i)
                 pred_image.save(filename)
                 if mode == 'VDSR':
                     res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
                     res = np.squeeze(res).astype(dtype='uint8')
                     res_image = Image.fromarray(res)
-                    filename = './restored_vdsr/20180302/{}_res.png'.format(i)
+                    filename = './restored_vdsr/20180302/{}_X4_res.png'.format(i)
                     res_image.save(filename)
 
         print('X4 : Avg PSNR is ', avg_psnr/5)
