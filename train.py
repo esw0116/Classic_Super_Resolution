@@ -89,7 +89,7 @@ class TRAIN:
         num_image = len(train_label_list)
 
         sr_model = VDSR(channel_length=self.c_length, image=self.x)
-        prediction, l2_loss = sr_model.build_model()
+        prediction, _, l2_loss = sr_model.build_model()
 
         learning_rate = tf.placeholder(dtype='float32', name='learning_rate')
 

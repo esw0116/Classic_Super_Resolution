@@ -32,8 +32,7 @@ class TEST:
             _, _, prediction = sr_model.build_model()
         elif mode == 'VDSR':
             sr_model = VDSR(channel_length=self.c_length, image=self.x)
-            prediction, _ = sr_model.build_model()
-            residual = prediction - self.x
+            prediction, residual, _ = sr_model.build_model()
 
         with tf.name_scope("PSNR"):
             psnr = 10 * tf.log(255 * 255 * tf.reciprocal(tf.reduce_mean(tf.square(self.y - prediction)))) / tf.log(tf.constant(10, dtype='float32'))

@@ -79,7 +79,7 @@ class VDSR:
 
         conv_fin = tf.add(conv[19], self.image)
 
-        return conv_fin, l2_loss
+        return conv_fin, conv[19], l2_loss
         '''
         regularizer = tf.contrib.layers.l2_regularizer(1e-4)
         conv = []
