@@ -81,10 +81,10 @@ class TRAIN:
         # images = low resolution, labels = high resolution
         sess = self.sess
         #load data
-        train_image_list_x2 = glob.glob('./dataset/training/X2/*.*')
-        train_image_list_x3 = glob.glob('./dataset/training/X3/*.*')
-        train_image_list_x4 = glob.glob('./dataset/training/X4/*.*')
-        train_label_list = glob.glob('./dataset/training/gray/*.*')
+        train_image_list_x2 = sorted(glob.glob('./dataset/training/X2/*.*'))
+        train_image_list_x3 = sorted(glob.glob('./dataset/training/X3/*.*'))
+        train_image_list_x4 = sorted(glob.glob('./dataset/training/X4/*.*'))
+        train_label_list = sorted(glob.glob('./dataset/training/gray/*.*'))
 
         num_image = len(train_label_list)
 
@@ -97,16 +97,15 @@ class TRAIN:
             loss = tf.reduce_mean(tf.square(self.y - prediction))
             loss += 1e-4 * l2_loss
 
-        #optimize = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
+        # optimize = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
         optimize = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
-
 
         # gradient clipping = Adam can handle by itself
         gvs = optimize.compute_gradients(loss=loss)
-        capped_gvs = [(tf.clip_by_value(grad, -5./learning_rate, 5./learning_rate), var) for grad, var in gvs]
+        capped_gvs = [(tf.clip_by_value(grad, -10./learning_rate, 10./learning_rate), var) for grad, var in gvs]
         train_op = optimize.apply_gradients(capped_gvs)
 
-        batch_size = 5
+        batch_size = 3
         num_batch = int((num_image - 1)/batch_size) + 1
         print(num_batch)
 
@@ -139,9 +138,9 @@ class TRAIN:
                                                                         min((j + 1) * batch_size, num_image), self.patch_size,
                                                                         self.num_patch_per_image)
 
-                    l2, total_loss, _ = sess.run([1e-4 * l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
+                    l2, total_loss, _ = sess.run([l2_loss, loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label, learning_rate: lr})
                     total_loss += total_loss/(num_batch * 3)
-                    total_l2 += l2/(num_batch * 3)
+                    total_l2 += 1e-4 * l2/(num_batch * 3)
 
             print('In', '%04d' %(i+1), 'epoch, current loss is', '{:.5f}'.format(total_loss - total_l2), '{:.5f}'.format(total_l2))
             saver.save(sess, save_path=self.save_path)
