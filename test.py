@@ -76,13 +76,13 @@ class TEST:
         avg_psnr = 0
         for i in range(num_image):
             test_image = np.array(Image.open(test_image_list_x3[i]))
-            h = test_image.shape[0]
-            w = test_image.shape[1]
+            test_image = test_image[np.newaxis, :, :, np.newaxis]
+            test_label = np.array(Image.open(test_label_list[i]))
+            h = test_label.shape[0]
+            w = test_label.shape[1]
             h -= h % 3
             w -= w % 3
-            test_image = test_image[np.newaxis, 0:h, 0:w, np.newaxis]
-            test_label = np.array(Image.open(test_label_list[i]))
-            test_label = test_label[np.newaxis, :, :, np.newaxis]
+            test_label = test_label[np.newaxis, 0:h, 0:w, np.newaxis]
 
             final_psnr = sess.run(psnr, feed_dict={self.x: test_image, self.y: test_label})
 
