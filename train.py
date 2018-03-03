@@ -97,14 +97,14 @@ class TRAIN:
             loss = tf.reduce_mean(tf.square(self.y - prediction))
             loss += 1e-4 * l2_loss
 
-        # optimize = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
-        optimize = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9)
-
+        train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
+        # optimize = tf.train.AdamOptimizer(learning_rate=learning_rate, momentum=0.9)
+        '''
         # gradient clipping = Adam can handle by itself
         gvs = optimize.compute_gradients(loss=loss)
         capped_gvs = [(tf.clip_by_value(grad, -10./learning_rate, 10./learning_rate), var) for grad, var in gvs]
         train_op = optimize.apply_gradients(capped_gvs)
-
+        '''
         batch_size = 3
         num_batch = int((num_image - 1)/batch_size) + 1
         print(num_batch)
@@ -116,13 +116,13 @@ class TRAIN:
         if self.pre_trained:
             saver.restore(sess, self.save_path)
 
-        lr = 1e-1
+        lr = 1e-3
 
         for i in range(iteration):
             total_loss = 0 # mse + l2
             total_l2 = 0
             if i % 20 == 19:
-                lr = lr * 0.1
+                lr = lr * 0.9
             for j in range(num_batch):
                 for k in range(3):
                     if k == 0:
