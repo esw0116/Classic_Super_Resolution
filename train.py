@@ -60,6 +60,7 @@ class TRAIN:
                                                                     self.num_patch_per_image)
                     mse_loss, _ = sess.run([loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label})
                     total_mse_loss += mse_loss/(num_batch * 3)
+                    print(mse_loss)
 
             print('In', i+1, 'epoch, current loss is', '{:.5f}'.format(total_mse_loss))
             saver.save(sess, save_path=self.save_path)
