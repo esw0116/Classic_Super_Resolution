@@ -24,9 +24,9 @@ class TRAIN:
         # images = low resolution, labels = high resolution
         sess = self.sess
         #load data
-        train_image_list_x2 = glob.glob('./dataset/training/X2/*.*')
-        train_image_list_x3 = glob.glob('./dataset/training/X3/*.*')
-        train_image_list_x4 = glob.glob('./dataset/training/X4/*.*')
+        train_image_list_x2 = sorted(glob.glob('./dataset/training/X2/*.*'))
+        train_image_list_x3 = sorted(glob.glob('./dataset/training/X3/*.*'))
+        train_image_list_x4 = sorted(glob.glob('./dataset/training/X4/*.*'))
         train_label_list = sorted(glob.glob('./dataset/training/gray/*.*'))
 
         num_image = len(train_label_list)
