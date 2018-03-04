@@ -6,11 +6,12 @@ from model import SRCNN, VDSR
 
 
 class TEST:
-    def __init__(self, sess, channel_length, save_path):
+    def __init__(self, sess, channel_length, save_path, date):
         self.c_length = channel_length
         self.x = tf.placeholder(dtype='float32', shape=[None, None, None, self.c_length], name='image')
         self.y = tf.placeholder(dtype='float32', shape=[None, None, None, self.c_length], name='image')
         self.save_path = save_path
+        self.date = date
         if sess is not None:
             self.sess = sess
 
@@ -64,13 +65,13 @@ class TEST:
                     pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                     pred = np.squeeze(pred).astype(dtype='uint8')
                     pred_image = Image.fromarray(pred)
-                    filename = './restored_{0}/20180304/{1}_X{2}.png'.format(mode, i, j)
+                    filename = './restored_{0}/{3}/{1}_X{2}.png'.format(mode, i, j, self.date)
                     pred_image.save(filename)
                     if mode == 'VDSR':
                         res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
                         res = np.squeeze(res).astype(dtype='uint8')
                         res_image = Image.fromarray(res)
-                        filename = './restored_{0}/20180304/{1}_X{2}_res.png'.format(mode, i, j)
+                        filename = './restored_{0}/{3}/{1}_X{2}_res.png'.format(mode, i, j, self.date)
                         res_image.save(filename)
 
             print('X{} : Avg PSNR is '.format(j), avg_psnr/5)
