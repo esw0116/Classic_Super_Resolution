@@ -20,7 +20,7 @@ with tf.Session(config=config) as sess:
     # save_path = './save_model/20170222/srcnn'
 
     if phase == 'train':
-        train_images = TRAIN(sess=sess, channel_length=channel_length, save_path=save_path, pre_trained=True, patch_size=33, num_patch_per_image=25)
+        train_images = TRAIN(sess=sess, channel_length=channel_length, save_path=save_path, pre_trained=False, patch_size=33, num_patch_per_image=25)
         if model == 'SRCNN':
             train_images.train_srcnn(iteration=5000)
         elif model == 'VDSR':
