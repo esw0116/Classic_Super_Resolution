@@ -33,6 +33,8 @@ def load_data(image_list, label_list, start, end, patch_size, num_patch_per_imag
 
         w = temp_label.shape[0]
         h = temp_label.shape[1]
+        print(temp_image.shape)
+        print(temp_label.shape)
 
         rand_x = np.random.randint(w - patch_size, size=num_patch_per_image)
         rand_y = np.random.randint(h - patch_size, size=num_patch_per_image)
