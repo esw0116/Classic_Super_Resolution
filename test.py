@@ -44,7 +44,7 @@ class TEST:
         for j in range(2, 5):
             avg_psnr = 0
             for i in range(num_image):
-                test_image_list = sorted(glob.glot('./dataset/test/X{}/*.*'.format(j)))
+                test_image_list = sorted(glob.glob('./dataset/test/X{}/*.*'.format(j)))
                 test_image = np.array(Image.open(test_image_list[i]))
                 test_image = test_image[np.newaxis, :, :, np.newaxis]
                 test_label = np.array(Image.open(test_label_list[i]))
