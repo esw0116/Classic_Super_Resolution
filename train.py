@@ -27,7 +27,7 @@ class TRAIN:
         train_image_list_x2 = glob.glob('./dataset/training/X2/*.*')
         train_image_list_x3 = glob.glob('./dataset/training/X3/*.*')
         train_image_list_x4 = glob.glob('./dataset/training/X4/*.*')
-        train_label_list = glob.glob('./dataset/training/gray/*.*')
+        train_label_list = sorted(glob.glob('./dataset/training/gray/*.*'))
 
         num_image = len(train_label_list)
 
@@ -37,8 +37,8 @@ class TRAIN:
         with tf.name_scope("mse_loss"):
             loss = tf.reduce_mean(tf.square(self.y - prediction))
 
-        train_op1 = tf.train.GradientDescentOptimizer(learning_rate=5e-5).minimize(loss, var_list=v1)
-        train_op2 = tf.train.GradientDescentOptimizer(learning_rate=5e-6).minimize(loss, var_list=v2)
+        train_op1 = tf.train.GradientDescentOptimizer(learning_rate=1e-4).minimize(loss, var_list=v1)
+        train_op2 = tf.train.GradientDescentOptimizer(learning_rate=1e-5).minimize(loss, var_list=v2)
         train_op = tf.group(train_op1, train_op2)
 
         # optimize = tf.train.GradientDescentOptimizer(learning_rate=1e-3).minimize(loss)
@@ -57,6 +57,7 @@ class TRAIN:
             total_mse_loss = 0
             for j in range(num_batch):
                 for k in range(3):
+                    train_image_list = glob.glob('./dataset/training/X{}/*.*'.format(k))
                     if k == 0:
                         batch_image, batch_label = preprocess.load_data(train_image_list_x2, train_label_list, j * batch_size,
                                                                         min((j + 1) * batch_size, num_image), self.patch_size,
@@ -72,7 +73,7 @@ class TRAIN:
                     mse_loss, _ = sess.run([loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label})
                     total_mse_loss += mse_loss/(num_batch * 3)
 
-            print('In', i+1, 'epoch, current loss is', total_mse_loss)
+            print('In', i+1, 'epoch, current loss is', '{:.5f}'.format(total_mse_loss))
             saver.save(sess, save_path=self.save_path)
 
         print('Train completed')
