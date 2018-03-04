@@ -41,11 +41,13 @@ def load_data(image_list, label_list, start, end, patch_size, num_patch_per_imag
 
         for j in range(num_patch_per_image):
             temp_patch_image = temp_image[rand_x[j]:rand_x[j]+patch_size, rand_y[j]:rand_y[j]+patch_size]
+            print(temp_patch_image.shape)
             temp_patch_image_augmented = data_augmentation(temp_patch_image)
             image_patch[num_patch_per_image*(i-start)+j, :, :, :] = temp_patch_image_augmented
 
             temp_patch_label = temp_label[rand_x[j]:rand_x[j]+patch_size, rand_y[j]:rand_y[j]+patch_size]
             temp_patch_label_augmented = data_augmentation(temp_patch_label)
+            print(temp_patch_label.shape)
             label_patch[num_patch_per_image * (i - start) + j, :, :, :] = temp_patch_label_augmented
 
     image_patch = image_patch.reshape((-1, patch_size, patch_size))
