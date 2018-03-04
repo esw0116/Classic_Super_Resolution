@@ -52,7 +52,7 @@ class TEST:
                 w = test_label.shape[1]
                 h -= h % 3
                 w -= w % 3
-                test_label = test_label[np.newaxis, :, :, np.newaxis]
+                test_label = test_label[np.newaxis, 0:h, 0:w, np.newaxis]
                 # print(test_image.shape, test_label.shape)
 
                 final_psnr = sess.run(psnr, feed_dict={self.x: test_image, self.y: test_label})
