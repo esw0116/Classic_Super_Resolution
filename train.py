@@ -24,9 +24,6 @@ class TRAIN:
         # images = low resolution, labels = high resolution
         sess = self.sess
         #load data
-        train_image_list_x2 = sorted(glob.glob('./dataset/training/X2/*.*'))
-        train_image_list_x3 = sorted(glob.glob('./dataset/training/X3/*.*'))
-        train_image_list_x4 = sorted(glob.glob('./dataset/training/X4/*.*'))
         train_label_list = sorted(glob.glob('./dataset/training/gray/*.*'))
 
         num_image = len(train_label_list)
@@ -56,20 +53,11 @@ class TRAIN:
         for i in range(iteration):
             total_mse_loss = 0
             for j in range(num_batch):
-                for k in range(3):
-                    train_image_list = glob.glob('./dataset/training/X{}/*.*'.format(k))
-                    if k == 0:
-                        batch_image, batch_label = preprocess.load_data(train_image_list_x2, train_label_list, j * batch_size,
-                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
-                                                                        self.num_patch_per_image)
-                    if k == 1:
-                        batch_image, batch_label = preprocess.load_data(train_image_list_x3, train_label_list, j * batch_size,
-                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
-                                                                        self.num_patch_per_image)
-                    if k == 2:
-                        batch_image, batch_label = preprocess.load_data(train_image_list_x4, train_label_list, j * batch_size,
-                                                                        min((j + 1) * batch_size, num_image), self.patch_size,
-                                                                        self.num_patch_per_image)
+                for k in range(2, 5):
+                    train_image_list = sorted(glob.glob('./dataset/training/X{}/*.*'.format(k)))
+                    batch_image, batch_label = preprocess.load_data(train_image_list, train_label_list, j * batch_size,
+                                                                    min((j + 1) * batch_size, num_image), self.patch_size,
+                                                                    self.num_patch_per_image)
                     mse_loss, _ = sess.run([loss, train_op], feed_dict={self.x: batch_image, self.y: batch_label})
                     total_mse_loss += mse_loss/(num_batch * 3)
 
