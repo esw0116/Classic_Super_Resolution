@@ -26,7 +26,7 @@ class SRCNN:
         self.image = image
 
     def get_weight_bias(self, filter_size, c_length1, c_length2, name):
-        weight = tf.Variable(tf.random_normal(shape=[filter_size, filter_size, c_length1, c_length2], mean=1, stddev=1e-3),
+        weight = tf.Variable(tf.random_normal(shape=[filter_size, filter_size, c_length1, c_length2], stddev=1e-3),
                              name=name + '_filter')
         bias = tf.Variable(tf.constant(0, shape=[c_length2], dtype='float32'), name=name + '_bias')
         return weight, bias
