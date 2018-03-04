@@ -50,8 +50,8 @@ class TEST:
                 test_label = np.array(Image.open(test_label_list[i]))
                 h = test_label.shape[0]
                 w = test_label.shape[1]
-                h -= h % 3
-                w -= w % 3
+                h -= h % j
+                w -= w % j
                 test_label = test_label[np.newaxis, 0:h, 0:w, np.newaxis]
                 # print(test_image.shape, test_label.shape)
 
