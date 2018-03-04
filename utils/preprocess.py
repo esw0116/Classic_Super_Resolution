@@ -38,6 +38,8 @@ def load_data(image_list, label_list, start, end, patch_size, num_patch_per_imag
 
         rand_x = np.random.randint(w - patch_size, size=num_patch_per_image)
         rand_y = np.random.randint(h - patch_size, size=num_patch_per_image)
+        print(rand_x)
+        print(rand_y)
 
         for j in range(num_patch_per_image):
             temp_patch_image = temp_image[rand_x[j]:rand_x[j]+patch_size, rand_y[j]:rand_y[j]+patch_size]
