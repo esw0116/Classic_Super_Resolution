@@ -64,7 +64,7 @@ class TEST:
                     pred = sess.run(prediction, feed_dict={self.x: test_image, self.y: test_label})
                     pred = np.squeeze(pred).astype(dtype='uint8')
                     pred_image = Image.fromarray(pred)
-                    filename = './restored_{0}/20180304/{1}_X{}.png'.format(mode, i, j)
+                    filename = './restored_{0}/20180304/{1}_X{2}.png'.format(mode, i, j)
                     pred_image.save(filename)
                     if mode == 'VDSR':
                         res = sess.run(residual, feed_dict={self.x: test_image, self.y: test_label})
